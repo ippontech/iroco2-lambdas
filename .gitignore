@@ -1,0 +1,25 @@
+# Commons OS / IDEs
+.DS_Store
+.idea/
+.vscode/
+*.log/
+
+# Node.js
+node_modules
+yarn-error.log
+
+
+numpy
+boto3
+pandas
+.idea
+
+*.zip
+
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+venv/
+.env/
