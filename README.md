@@ -1,0 +1,30 @@
+# Project Name
+
+This project is part of [IroCO2](https://github.com/ippontech/iroco2). You are not in the principal repository. For any general information about the project, please refer to the [principal repository](https://github.com/ippontech/iroco2).
+
+This is the repository containing the AWS Lambda functions used by the IroCO2 application. It is a monorepo containing multiple lambda functions.
+
+## 🚀 Getting Started
+
+This project is WIP and not ready to be used. The documentation is not yet complete.
+
+### Prerequisites
+
+- Python 3.12
+
+
+## 📝 License
+
+Distributed under the Apache 2.0 License. See [LICENSE](./LICENSE) for more information.
+
+---
+
+## 📄 Documentation
+
+See [docs/](./docs) for technical documentation. (If this folder is empty, refer to the principal repository.)
+
+For ADRs and workflow documentation, see the [principal repository](https://github.com/ippontech/iroco2/blob/main/contribute/adr/) and [workflows](https://github.com/ippontech/iroco2/tree/main/contribute/workflows).
+
+## 🤝 Contributing
+
+See [CONTRIBUTING.md](./CONTRIBUTING.md)
