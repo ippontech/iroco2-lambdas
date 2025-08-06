@@ -23,3 +23,9 @@ __pycache__/
 
 venv/
 .env/
+
+# Terraform
+*.tfstate
+.tfstate.backup
+*tfvars
+*override*.tf
