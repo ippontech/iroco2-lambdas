@@ -29,3 +29,5 @@ venv/
 .tfstate.backup
 *tfvars
 *override*.tf
+.terraform
+.terraform.lock.hcl
