@@ -1,0 +1,193 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: "Template for S3 bucket with Lambda trigger on PUT events"
+
+Parameters:
+  KMSkeyARN:
+    Description: "Enter the KMS key to encrypt the bucket"
+    Type: String
+  LayerBucketStorage:
+    Description: "Enter the S3 bucket name for the lambda layer"
+    Type: String
+  LayerBucketKey:
+    Description: "Enter the S3 bucket key for the lambda layer"
+    Type: String
+  AWSOrgID:
+    Description: "Enter the AWS Org ID"
+    Type: String
+  CUROutputBucketName:
+    Description: "Enter the S3 bucket name for the CUR output"
+    Type: String
+  CURFunctionS3Key:
+    Description: "Enter the S3 bucket key for the CUR lambda function"
+    Type: String
+  CURFunctionS3Bucket:
+    Description: "Enter the S3 bucket name for the CUR lambda function"
+    Type: String
+  Iroco2APIEndpoint:
+    Description: "Enter the IroCO2 API endpoint"
+    Type: String
+  Iroco2GatewayEndpoint:
+    Description: "Enter the IroCO2 Gateway endpoint"
+    Type: String
+  Iroco2APIKey:
+    Description: "Enter the IroCO2 API token"
+    Type: String
+  LambdaLogGroupName:
+    Description: "Log group Name for lambda"
+    Type: String
+
+Resources:
+  S3bucketOutputCUR:
+    Type: AWS::S3::Bucket
+    Properties:
+      NotificationConfiguration:
+        LambdaConfigurations:
+          - Event: "s3:ObjectCreated:Copy"
+            Function: !GetAtt ProcessingFunction.Arn
+            Filter:
+              S3Key:
+                Rules:
+                  - Name: suffix
+                    Value: .parquet
+          - Event: "s3:ObjectCreated:Copy"
+            Function: !GetAtt ProcessingFunction.Arn
+            Filter:
+              S3Key:
+                Rules:
+                  - Name: suffix
+                    Value: .csv.zip
+      BucketName: !Ref CUROutputBucketName
+      BucketEncryption:
+        ServerSideEncryptionConfiguration:
+          - ServerSideEncryptionByDefault:
+              SSEAlgorithm: "aws:kms"
+              KMSMasterKeyID: !Ref KMSkeyARN
+      VersioningConfiguration:
+        Status: Suspended
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        BlockPublicPolicy: true
+        IgnorePublicAcls: true
+        RestrictPublicBuckets: true
+      Tags:
+        - Key: Project
+          Value: IROCO2
+
+  S3CURBucketAccessPolicy:
+    Type: AWS::S3::BucketPolicy
+    Properties:
+      Bucket: !Ref S3bucketOutputCUR
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              AWS:
+                - !Ref "AWS::AccountId"
+            Action:
+              - "s3:*"
+            Resource:
+              - !Sub "arn:aws:s3:::${CUROutputBucketName}"
+              - !Sub "arn:aws:s3:::${CUROutputBucketName}/*"
+            Condition:
+              Bool:
+                aws:SecureTransport: true
+              StringEquals:
+                aws:PrincipalOrgId: !Ref AWSOrgID
+          - Effect: Deny
+            Principal:
+              AWS:
+                - !GetAtt LambdaExecutionRole.Arn
+            NotAction:
+              - "s3:GetObject"
+            Resource:
+              - !Sub "arn:aws:s3:::${CUROutputBucketName}/*"
+            Condition:
+              Bool:
+                aws:SecureTransport: true
+
+  # Lambda Function Permission
+  LambdaPermission:
+    Type: "AWS::Lambda::Permission"
+    Properties:
+      Action: "lambda:InvokeFunction"
+      FunctionName: !Ref ProcessingFunction
+      Principal: "s3.amazonaws.com"
+      SourceArn: !Sub "arn:aws:s3:::${CUROutputBucketName}"
+
+  # IAM Role for Lambda
+  LambdaExecutionRole:
+    Type: "AWS::IAM::Role"
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+            Action: "sts:AssumeRole"
+      ManagedPolicyArns:
+        - "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
+      Policies:
+        - PolicyName: S3Access
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action:
+                  - "s3:GetObject"
+                Resource: !Sub "arn:aws:s3:::${CUROutputBucketName}/*"
+              - Effect: Allow
+                Action:
+                  - "kms:Decrypt"
+                Resource: !Ref KMSkeyARN
+
+  HelperScriptLayer:
+    Type: AWS::Lambda::LayerVersion
+    Properties:
+      LayerName: helper-scripts
+      Description: Scripts for IROCO2 helpers
+      CompatibleRuntimes:
+        - python3.9
+        - python3.10
+        - python3.11
+      Content:
+        S3Key: !Ref LayerBucketKey
+        S3Bucket: !Ref LayerBucketStorage
+
+  # Lambda Function
+  ProcessingFunction:
+    Type: "AWS::Lambda::Function"
+    Properties:
+      FunctionName: "IROCO2-CUR-SCRAPPER"
+      Handler: "cur_scrapper.handler"
+      Role: !GetAtt LambdaExecutionRole.Arn
+      Layers:
+        - !Ref HelperScriptLayer
+        - !Sub "arn:aws:lambda:eu-west-3:336392948345:layer:AWSSDKPandas-Python311:18"
+      Runtime: python3.11
+      Timeout: 900
+      MemorySize: 512
+      LoggingConfig:
+        LogGroup: !Ref LambdaLogGroupName
+      Environment:
+        Variables:
+          IROCO2_API_ENDPOINT: !Ref Iroco2APIEndpoint
+          IROCO2_GATEWAY_ENDPOINT: !Ref Iroco2GatewayEndpoint
+          IROCO2_API_KEY: !Ref Iroco2APIKey
+      Code:
+        S3Key: !Ref CURFunctionS3Key
+        S3Bucket: !Ref CURFunctionS3Bucket
+
+  # CloudWatch Log Group for Lambda
+  LambdaLogGroup:
+    Type: "AWS::Logs::LogGroup"
+    Properties:
+      LogGroupName: !Ref LambdaLogGroupName
+      RetentionInDays: 14
+      KmsKeyId: !Ref KMSkeyARN
+
+Outputs:
+  CURLambdaFunctionName:
+    Description: "Name of the created Lambda function for CUR extraction"
+    Value: !Ref ProcessingFunction
