@@ -34,17 +34,17 @@ func handler(event events.APIGatewayCustomAuthorizerRequest) (events.APIGatewayC
 func loadPublicKey(pemKey string) (*rsa.PublicKey, error) {
 	block, _ := pem.Decode([]byte(pemKey))
 	if block == nil {
-		return nil, errors.New("échec du décodage de la clé publique PEM")
+		return nil, errors.New("failed to decode PEM public key")
 	}
 
 	pubKey, err := x509.ParsePKIXPublicKey(block.Bytes)
 	if err != nil {
-		return nil, fmt.Errorf("erreur lors de l'analyse de la clé publique: %v", err)
+		return nil, fmt.Errorf("error parsing public key: %v", err)
 	}
 
 	rsaPubKey, ok := pubKey.(*rsa.PublicKey)
 	if !ok {
-		return nil, fmt.Errorf("la clé publique n'est pas de type RSA")
+		return nil, fmt.Errorf("public key is not of type RSA")
 	}
 
 	return rsaPubKey, nil
@@ -63,7 +63,7 @@ func isValidToken(token string) bool {
 
 	parsedToken, err := jwt.Parse(token, func(token *jwt.Token) (interface{}, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodRSA); !ok {
-			return nil, fmt.Errorf("méthode de signature inattendue: %v", token.Header["alg"])
+			return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
 		}
 		return publicKey, nil
 	})

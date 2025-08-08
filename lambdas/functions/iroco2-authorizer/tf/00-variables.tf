@@ -26,19 +26,19 @@ variable "cors_allowed_origins" {
 }
 
 variable "clerk_public_key" {
-  description = "cle public de clerk"
+  description = "Clerk public key"
   type        = string
   default     = "clerk_public_key"
 }
 
 variable "clerk_issuer" {
-  description = "issuer de clerk"
+  description = "Clerk issuer"
   type        = string
   default     = "clerk_issuer"
 }
 
 variable "clerk_audience" {
-  description = "audience de clerk"
+  description = "Clerk audience"
   type        = string
   default     = "clerk_audience"
 }
