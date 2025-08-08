@@ -31,6 +31,7 @@ deploy_lambda() {
       --function-name lambda-cur-processor-iroco2 \
       --s3-bucket $LAMBDA_BUCKET_NAME \
       --s3-key lambda/cur/iroco2/cur_processor
+      --no-cli-pager
   deactivate
 }
 
