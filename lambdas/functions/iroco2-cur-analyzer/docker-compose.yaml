@@ -1,0 +1,17 @@
+name: 'iroco2-cur-analyzer'
+
+services:
+  aws:
+    image: 'localstack/localstack'
+    container_name: 'localstack'
+    environment:
+      - SERVICES=sqs,s3,lambda,ssm,logs,iam,events
+      - DEFAULT_REGION=eu-west-3
+      - AWS_DEFAULT_REGION=eu-west-3
+      - DEBUG=1
+      - DATA_DIR=/var/localstack/data
+      - LAMBDA_EXECUTOR=docker
+    ports:
+      - '4566:4566'
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
