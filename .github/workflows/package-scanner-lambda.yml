@@ -1,54 +1,15 @@
-name: Package Scanner Lambda zips to GHCR
+name: Package Scanner Lambda
 
 on:
   push:
     tags:
-      - 'v*'
-
-permissions:
-  contents: write
+      - 'scanner-v*'
 
 jobs:
-  build-and-publish:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Prepare paths
-        id: prep
-        run: |
-          FUNC_DIR="lambdas/functions/iroco2-client-side-scanner"
-          echo "FUNC_DIR=${FUNC_DIR}" >> $GITHUB_ENV
-          echo "LAMBDA_NAME=$(basename ${FUNC_DIR})" >> $GITHUB_ENV
-          echo "LAYERS_DIR=${FUNC_DIR}/layers" >> $GITHUB_ENV
-          echo "HANDLER_DIR=${FUNC_DIR}/package" >> $GITHUB_ENV
-          echo "OUT_DIR=${FUNC_DIR}/dist" >> $GITHUB_ENV
-          mkdir -p lambdas/functions/iroco2-client-side-scanner/dist
-
-      - name: Create scanner-layers.zip
-        run: |
-          cd "$LAYERS_DIR"
-          zip -r ../dist/scanner-layers.zip . -x "*/.*"
-        shell: bash
-
-      - name: Create scanner-handler.zip
-        run: |
-          cd "$HANDLER_DIR"
-          # Exclude the output zip name which Terraform previously produced to avoid recursion
-          zip -r ../dist/scanner-handler.zip . -x "cur_scrapper.zip" "*/.*"
-        shell: bash
-
-      - name: Prepare config for release
-        run: cp ${FUNC_DIR}/lambda.yaml ${OUT_DIR}/scanner-lambda.yaml
-
-      - name: Create Release and Upload Assets
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          gh release create ${{ github.ref_name }} \
-            --generate-notes \
-            --title "Release ${{ github.ref_name }}" \
-            ${OUT_DIR}/scanner-layers.zip \
-            ${OUT_DIR}/scanner-handler.zip \
-            ${OUT_DIR}/scanner-lambda.yaml
+  call-reusable-workflow:
+    uses: ./.github/workflows/reusable-package-lambda.yml
+    with:
+      lambda-name: 'scanner'
+      lambda-path: 'lambdas/functions/iroco2-client-side-scanner'
+      handler-dir: 'package'
+    secrets: inherit

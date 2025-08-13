@@ -1,0 +1,16 @@
+name: Package CUR Analyzer Lambda
+
+on:
+  push:
+    tags:
+      - 'analyzer-v*'
+
+jobs:
+  call-reusable-workflow:
+    uses: ./.github/workflows/reusable-package-lambda.yml
+    with:
+      lambda-name: 'analyzer'
+      lambda-path: 'lambdas/functions/iroco2-cur-analyzer'
+      handler-dir: 'src'
+      build-command: 'bash scripts/python-layers.sh'
+    secrets: inherit

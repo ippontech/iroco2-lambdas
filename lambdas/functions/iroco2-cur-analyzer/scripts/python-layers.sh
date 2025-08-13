@@ -1,24 +1,33 @@
 #!/usr/bin/env sh
 
-# This script is used within GitLab CI to create the proper zip files for the layers.
-# This should not be ran locally when using localstack since localstack free can't use lambda layers.
+# This script is used within GitLab CI to create the proper zip file for the lambda layer.
 
 set -o errexit
+set -o nounset
 
-echo "Creating zip file for lambda layers"
-mkdir -p ./layers
+if [ -z "$1" ]; then
+  echo "Error: Output zip file path is required as the first argument." >&2
+  exit 1
+fi
 
-SCRIPT_PATH="$( cd -- "$(dirname "$0")" >/dev/null 2>&1 ; pwd -P )"
+OUTPUT_ZIP_PATH=$1
 
-# Create a single consolidated layer with all dependencies
-echo "Creating python directory for the layer"
-mkdir -p ./python
+echo "Creating zip file for lambda layers at ${OUTPUT_ZIP_PATH}"
 
-echo "Installing all dependencies"
-pip install --platform manylinux2014_x86_64 --only-binary=:all: --target ./python -r requirements.txt
+# Create a temporary directory for building the layer to avoid polluting the source tree
+BUILD_DIR=$(mktemp -d)
 
-echo "Compressing dependencies into a single layer"
-python -m zipfile -c "./layers/dependencies.zip" "./python/"
+# Create the python directory structure required by Lambda
+mkdir -p "${BUILD_DIR}/python"
 
-echo "Cleaning up"
-rm -Rf "./python"
+echo "Installing all dependencies into ${BUILD_DIR}/python"
+pip install --platform manylinux2014_x86_64 --only-binary=:all: --target "${BUILD_DIR}/python" -r requirements.txt
+
+echo "Compressing dependencies into ${OUTPUT_ZIP_PATH}"
+cd "${BUILD_DIR}/python"
+zip -r "${OUTPUT_ZIP_PATH}" .
+
+# Clean up the temporary directory
+rm -rf "${BUILD_DIR}"
+
+echo "Layer zip created successfully."
