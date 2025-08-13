@@ -21,10 +21,12 @@ jobs:
       - name: Prepare paths
         id: prep
         run: |
-          echo "FUNC_DIR=lambdas/functions/iroco2-client-side-scanner" >> $GITHUB_ENV
-          echo "LAYERS_DIR=lambdas/functions/iroco2-client-side-scanner/layers" >> $GITHUB_ENV
-          echo "HANDLER_DIR=lambdas/functions/iroco2-client-side-scanner/package" >> $GITHUB_ENV
-          echo "OUT_DIR=lambdas/functions/iroco2-client-side-scanner/dist" >> $GITHUB_ENV
+          FUNC_DIR="lambdas/functions/iroco2-client-side-scanner"
+          echo "FUNC_DIR=${FUNC_DIR}" >> $GITHUB_ENV
+          echo "LAMBDA_NAME=$(basename ${FUNC_DIR})" >> $GITHUB_ENV
+          echo "LAYERS_DIR=${FUNC_DIR}/layers" >> $GITHUB_ENV
+          echo "HANDLER_DIR=${FUNC_DIR}/package" >> $GITHUB_ENV
+          echo "OUT_DIR=${FUNC_DIR}/dist" >> $GITHUB_ENV
           mkdir -p lambdas/functions/iroco2-client-side-scanner/dist
 
       - name: Create layers.zip
@@ -50,14 +52,8 @@ jobs:
         id: vars
         run: |
           SHORT_SHA=${GITHUB_SHA::7}
-          REF_NAME=${GITHUB_REF_NAME}
-          if [[ "${{ github.ref_type }}" == "tag" ]]; then
-            VERSION_TAG="${REF_NAME}"
-          else
-            VERSION_TAG="${REF_NAME}-${SHORT_SHA}"
-          fi
-          echo "version_tag=$VERSION_TAG" >> $GITHUB_OUTPUT
-          if [[ "${REF_NAME}" == "main" ]]; then
+          echo "version_tag=${SHORT_SHA}" >> $GITHUB_OUTPUT
+          if [[ "${{ github.ref_name }}" == "main" ]]; then
             echo "latest_tag=latest" >> $GITHUB_OUTPUT
           else
             echo "latest_tag=" >> $GITHUB_OUTPUT
@@ -65,28 +61,28 @@ jobs:
 
       - name: Push layers.zip as OCI package
         run: |
-          oras push ghcr.io/${{ github.repository }}/client-side-scanner-layers:${{ steps.vars.outputs.version_tag }} \
+          oras push ghcr.io/${{ github.repository }}/${{ env.LAMBDA_NAME }}-layer:${{ steps.vars.outputs.version_tag }} \
             ${OUT_DIR}/layers.zip:application/zip
           if [[ -n "${{ steps.vars.outputs.latest_tag }}" ]]; then
-            oras push ghcr.io/${{ github.repository }}/client-side-scanner-layers:${{ steps.vars.outputs.latest_tag }} \
+            oras push ghcr.io/${{ github.repository }}/${{ env.LAMBDA_NAME }}-layer:${{ steps.vars.outputs.latest_tag }} \
               ${OUT_DIR}/layers.zip:application/zip
           fi
 
       - name: Push handler.zip as OCI package
         run: |
-          oras push ghcr.io/${{ github.repository }}/client-side-scanner-handler:${{ steps.vars.outputs.version_tag }} \
+          oras push ghcr.io/${{ github.repository }}/${{ env.LAMBDA_NAME }}-handler:${{ steps.vars.outputs.version_tag }} \
             ${OUT_DIR}/handler.zip:application/zip
           if [[ -n "${{ steps.vars.outputs.latest_tag }}" ]]; then
-            oras push ghcr.io/${{ github.repository }}/client-side-scanner-handler:${{ steps.vars.outputs.latest_tag }} \
+            oras push ghcr.io/${{ github.repository }}/${{ env.LAMBDA_NAME }}-handler:${{ steps.vars.outputs.latest_tag }} \
               ${OUT_DIR}/handler.zip:application/zip
           fi
 
       - name: Push lambda.yaml as OCI package
         run: |
-          oras push ghcr.io/${{ github.repository }}/client-side-scanner-lambda-config:${{ steps.vars.outputs.version_tag }} \
+          oras push ghcr.io/${{ github.repository }}/${{ env.LAMBDA_NAME }}-lambda-config:${{ steps.vars.outputs.version_tag }} \
             ${FUNC_DIR}/lambda.yaml:text/yaml
           if [[ -n "${{ steps.vars.outputs.latest_tag }}" ]]; then
-            oras push ghcr.io/${{ github.repository }}/client-side-scanner-lambda-config:${{ steps.vars.outputs.latest_tag }} \
+            oras push ghcr.io/${{ github.repository }}/${{ env.LAMBDA_NAME }}-lambda-config:${{ steps.vars.outputs.latest_tag }} \
               ${FUNC_DIR}/lambda.yaml:text/yaml
           fi
 
@@ -98,21 +94,21 @@ jobs:
           LATEST_TAG=${{ steps.vars.outputs.latest_tag }}
           echo "Packages page: https://github.com/${OWNER}/${REPO}/packages"
           echo
-          echo "Layers package (version): ghcr.io/${OWNER}/${REPO}/client-side-scanner-layers:${VERSION_TAG}"
-          echo "Handler package (version): ghcr.io/${OWNER}/${REPO}/client-side-scanner-handler:${VERSION_TAG}"
-          echo "Lambda config (version): ghcr.io/${OWNER}/${REPO}/client-side-scanner-lambda-config:${VERSION_TAG}"
+          echo "Layers package (version): ghcr.io/${OWNER}/${REPO}/${{ env.LAMBDA_NAME }}-layer:${VERSION_TAG}"
+          echo "Handler package (version): ghcr.io/${OWNER}/${REPO}/${{ env.LAMBDA_NAME }}-handler:${VERSION_TAG}"
+          echo "Lambda config (version): ghcr.io/${OWNER}/${REPO}/${{ env.LAMBDA_NAME }}-lambda-config:${VERSION_TAG}"
           if [[ -n "${LATEST_TAG}" ]]; then
-            echo "Layers package (latest): ghcr.io/${OWNER}/${REPO}/client-side-scanner-layers:${LATEST_TAG}"
-            echo "Handler package (latest): ghcr.io/${OWNER}/${REPO}/client-side-scanner-handler:${LATEST_TAG}"
-            echo "Lambda config (latest): ghcr.io/${OWNER}/${REPO}/client-side-scanner-lambda-config:${LATEST_TAG}"
+            echo "Layers package (latest): ghcr.io/${OWNER}/${REPO}/${{ env.LAMBDA_NAME }}-layer:${LATEST_TAG}"
+            echo "Handler package (latest): ghcr.io/${OWNER}/${REPO}/${{ env.LAMBDA_NAME }}-handler:${LATEST_TAG}"
+            echo "Lambda config (latest): ghcr.io/${OWNER}/${REPO}/${{ env.LAMBDA_NAME }}-lambda-config:${LATEST_TAG}"
           fi
           echo
           echo "Pull commands (oras):"
-          echo "  oras pull ghcr.io/${OWNER}/${REPO}/client-side-scanner-layers:${VERSION_TAG}"
-          echo "  oras pull ghcr.io/${OWNER}/${REPO}/client-side-scanner-handler:${VERSION_TAG}"
-          echo "  oras pull ghcr.io/${OWNER}/${REPO}/client-side-scanner-lambda-config:${VERSION_TAG}"
+          echo "  oras pull ghcr.io/${OWNER}/${REPO}/${{ env.LAMBDA_NAME }}-layer:${VERSION_TAG}"
+          echo "  oras pull ghcr.io/${OWNER}/${REPO}/${{ env.LAMBDA_NAME }}-handler:${VERSION_TAG}"
+          echo "  oras pull ghcr.io/${OWNER}/${REPO}/${{ env.LAMBDA_NAME }}-lambda-config:${VERSION_TAG}"
           if [[ -n "${LATEST_TAG}" ]]; then
-            echo "  oras pull ghcr.io/${OWNER}/${REPO}/client-side-scanner-layers:${LATEST_TAG}"
-            echo "  oras pull ghcr.io/${OWNER}/${REPO}/client-side-scanner-handler:${LATEST_TAG}"
-            echo "  oras pull ghcr.io/${OWNER}/${REPO}/client-side-scanner-lambda-config:${LATEST_TAG}"
+            echo "  oras pull ghcr.io/${OWNER}/${REPO}/${{ env.LAMBDA_NAME }}-layer:${LATEST_TAG}"
+            echo "  oras pull ghcr.io/${OWNER}/${REPO}/${{ env.LAMBDA_NAME }}-handler:${LATEST_TAG}"
+            echo "  oras pull ghcr.io/${OWNER}/${REPO}/${{ env.LAMBDA_NAME }}-lambda-config:${LATEST_TAG}"
           fi
