@@ -29,13 +29,13 @@ jobs:
       - name: Create layers.zip
         run: |
           cd "${{ env.LAYERS_DIR }}"
-          zip -r "${{ env.OUT_DIR }}/scanner-layers.zip" . -x "*/.*"
+          zip -r "../dist/scanner-layers.zip" . -x "*/.*"
         shell: bash
 
       - name: Create handler.zip
         run: |
           cd "${{ env.HANDLER_DIR }}"
-          zip -r "${{ env.OUT_DIR }}/scanner-handler.zip" . -x "*/.*"
+          zip -r "../dist/scanner-handler.zip" . -x "*/.*"
         shell: bash
 
       - name: Prepare config for release

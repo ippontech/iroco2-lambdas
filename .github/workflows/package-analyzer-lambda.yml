@@ -28,17 +28,14 @@ jobs:
       - name: Build layer
         run: |
           cd ${{ env.FUNC_DIR }}
-          bash scripts/python-layers.sh ${{ env.OUT_DIR }}/analyzer-layers.zip
+          bash scripts/python-layers.sh "${{ github.workspace }}/${{ env.OUT_DIR }}/analyzer-layers.zip"
         shell: bash
 
       - name: Create handler.zip
         run: |
-          cd ${{ env.FUNC_DIR }}
-          zip -r ${{ env.OUT_DIR }}/analyzer-handler.zip src -x "*/.*"
+          cd "${{ env.HANDLER_DIR }}"
+          zip -r "../dist/analyzer-handler.zip" . -x "*/.*"
         shell: bash
-
-      - name: Prepare config for release
-        run: cp "${{ env.FUNC_DIR }}/lambda.yaml" "${{ env.OUT_DIR }}/analyzer-lambda.yaml"
 
       - name: Create Release and Upload Assets
         uses: softprops/action-gh-release@v1
@@ -46,5 +43,4 @@ jobs:
           files: |
             ${{ env.OUT_DIR }}/analyzer-layers.zip
             ${{ env.OUT_DIR }}/analyzer-handler.zip
-            ${{ env.OUT_DIR }}/analyzer-lambda.yaml
 
