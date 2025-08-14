@@ -27,6 +27,7 @@ locals {
   }
 }
 
+# TODO: Retrieve the zip file from the GitHub release instead of zipping it here
 data "archive_file" "cur_processor" {
   type = "zip"
 

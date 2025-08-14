@@ -1,0 +1,53 @@
+name: Package Scanner Lambda
+
+on:
+  push:
+    tags:
+      - 'scanner-v*'
+
+permissions:
+  contents: write
+
+jobs:
+  build-and-release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up environment
+        id: setup_env
+        run: |
+          FUNC_DIR='lambdas/functions/iroco2-client-side-scanner'
+          OUT_DIR=${FUNC_DIR}/dist
+          echo "FUNC_DIR=${FUNC_DIR}" >> $GITHUB_ENV
+          echo "LAYERS_DIR=${FUNC_DIR}/layers" >> $GITHUB_ENV
+          echo "HANDLER_DIR=${FUNC_DIR}/package" >> $GITHUB_ENV
+          echo "OUT_DIR=${OUT_DIR}" >> $GITHUB_ENV
+          mkdir -p ${OUT_DIR}
+
+      - name: Create layers.zip
+        run: |
+          cd "${{ env.LAYERS_DIR }}"
+          zip -r "../dist/scanner-layers.zip" . -x "*/.*"
+        shell: bash
+
+      - name: Create handler.zip
+        run: |
+          cd "${{ env.HANDLER_DIR }}"
+          zip -r "../dist/scanner-handler.zip" . -x "*/.*"
+        shell: bash
+
+      - name: Prepare config for release
+        run: cp "${{ env.FUNC_DIR }}/lambda.yaml" "${{ env.OUT_DIR }}/scanner-lambda.yaml"
+
+      - name: Create Release and Upload Assets
+        uses: softprops/action-gh-release@v1
+        with:
+          append_body: true
+          body: |
+            This release refer only to the client side scanner lambda.
+          files: |
+            ${{ env.OUT_DIR }}/scanner-layers.zip
+            ${{ env.OUT_DIR }}/scanner-handler.zip
+            ${{ env.OUT_DIR }}/scanner-lambda.yaml
