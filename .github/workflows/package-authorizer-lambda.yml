@@ -1,4 +1,4 @@
-name: Package CUR Analyzer Lambda
+name: Package Scanner Authorizer Lambda
 
 on:
   push:
@@ -30,6 +30,9 @@ jobs:
           - name: Create Release and Upload Assets
             uses: softprops/action-gh-release@v1
             with:
+                append_body: true
+                body: |
+                    This release refer only to the scanner authorizer lambda.   
                 files: |
                     ${{ env.HANDLER_DIR }}/bootstrap
             

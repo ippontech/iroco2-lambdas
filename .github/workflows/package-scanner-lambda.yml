@@ -44,6 +44,9 @@ jobs:
       - name: Create Release and Upload Assets
         uses: softprops/action-gh-release@v1
         with:
+          append_body: true
+          body: |
+            This release refer only to the client side scanner lambda.
           files: |
             ${{ env.OUT_DIR }}/scanner-layers.zip
             ${{ env.OUT_DIR }}/scanner-handler.zip
