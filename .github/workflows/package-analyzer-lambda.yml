@@ -5,12 +5,46 @@ on:
     tags:
       - 'analyzer-v*'
 
+permissions:
+  contents: write
+
 jobs:
-  call-reusable-workflow:
-    uses: ./.github/workflows/reusable-package-lambda.yml
-    with:
-      lambda-name: 'analyzer'
-      lambda-path: 'lambdas/functions/iroco2-cur-analyzer'
-      handler-dir: 'src'
-      build-command: 'bash scripts/python-layers.sh'
-    secrets: inherit
+  build-and-release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up environment
+        id: setup_env
+        run: |
+          FUNC_DIR='lambdas/functions/iroco2-cur-analyzer'
+          OUT_DIR=${FUNC_DIR}/dist
+          echo "FUNC_DIR=${FUNC_DIR}" >> $GITHUB_ENV
+          echo "HANDLER_DIR=${FUNC_DIR}/src" >> $GITHUB_ENV
+          echo "OUT_DIR=${OUT_DIR}" >> $GITHUB_ENV
+          mkdir -p ${OUT_DIR}
+
+      - name: Build layer
+        run: |
+          cd ${{ env.FUNC_DIR }}
+          bash scripts/python-layers.sh ${{ env.OUT_DIR }}/analyzer-layers.zip
+        shell: bash
+
+      - name: Create handler.zip
+        run: |
+          cd ${{ env.FUNC_DIR }}
+          zip -r ${{ env.OUT_DIR }}/analyzer-handler.zip src -x "*/.*"
+        shell: bash
+
+      - name: Prepare config for release
+        run: cp "${{ env.FUNC_DIR }}/lambda.yaml" "${{ env.OUT_DIR }}/analyzer-lambda.yaml"
+
+      - name: Create Release and Upload Assets
+        uses: softprops/action-gh-release@v1
+        with:
+          files: |
+            ${{ env.OUT_DIR }}/analyzer-layers.zip
+            ${{ env.OUT_DIR }}/analyzer-handler.zip
+            ${{ env.OUT_DIR }}/analyzer-lambda.yaml
+
