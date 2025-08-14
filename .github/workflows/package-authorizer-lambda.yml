@@ -1,0 +1,36 @@
+name: Package CUR Analyzer Lambda
+
+on:
+  push:
+    tags:
+      - 'authorizer-v*'
+
+permissions:
+  contents: write
+
+jobs:
+    build-and-release:
+        runs-on: ubuntu-latest
+        steps:
+          - name: Checkout
+            uses: actions/checkout@v4
+
+          - name: Set up environment
+            id: setup_env
+            run: |
+              FUNC_DIR='lambdas/functions/iroco2-authorizer'
+              echo "FUNC_DIR=${FUNC_DIR}" >> $GITHUB_ENV
+              echo "HANDLER_DIR=${FUNC_DIR}/src" >> $GITHUB_ENV
+
+          - name: Build layer
+            run: | 
+                cd ${{ env.HANDLER_DIR }}
+                ../scripts/build.sh
+        
+          - name: Create Release and Upload Assets
+            uses: softprops/action-gh-release@v1
+            with:
+                files: |
+                    ${{ env.HANDLER_DIR }}/bootstrap
+            
+            
