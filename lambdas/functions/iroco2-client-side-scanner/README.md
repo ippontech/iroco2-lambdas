@@ -8,7 +8,4 @@ This lambda is used to scan aws accounts to retrieve the CUR data and carbon imp
 
 - Upate docs to self host assets
 
-
-
-SaaS mode documentation (french): https://docs.greensuite.ippon.fr/#/docs/guide_scanner
-
+SaaS mode documentation (french): <https://docs.greensuite.ippon.fr/#/docs/guide_scanner>
