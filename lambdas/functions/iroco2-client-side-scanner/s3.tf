@@ -45,7 +45,7 @@ resource "aws_s3_bucket_policy" "cur_output" {
       {
         Effect = "Allow"
         Principal = {
-          AWS = data.aws_caller_identity.current.account_id
+          AWS = "arn:aws:iam::${data.aws_caller_identity.current.account_id}:root"
         }
         Action = "s3:*"
         Resource = [
@@ -58,6 +58,34 @@ resource "aws_s3_bucket_policy" "cur_output" {
           }
           StringEquals = {
             "aws:PrincipalOrgId" = var.aws_org_id
+          }
+        }
+      },
+      {
+        Effect = "Allow"
+        Principal = {
+          Service = [
+            "bcm-data-exports.amazonaws.com",
+            "billingreports.amazonaws.com"
+          ]
+        }
+        Action = [
+          "s3:GetBucketPolicy",
+          "s3:PutObject"
+        ]
+        Resource = [
+          "arn:aws:s3:::${var.cur_output_bucket_name}",
+          "arn:aws:s3:::${var.cur_output_bucket_name}/*"
+        ]
+        Condition = {
+          StringEquals = {
+            "aws:SourceAccount" = data.aws_caller_identity.current.account_id,
+          },
+          StringLike = {
+            "aws:SourceArn" = [
+              "arn:aws:bcm-data-exports:us-east-1:${data.aws_caller_identity.current.account_id}:export/*",
+              "arn:aws:cur:us-east-1:${data.aws_caller_identity.current.account_id}:definition/*"
+            ]
           }
         }
       },
