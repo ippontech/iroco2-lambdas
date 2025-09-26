@@ -4,6 +4,12 @@ data "archive_file" "layers" {
   output_path = "${path.module}/layers.zip"
 }
 
+data "archive_file" "lambda_code" {
+  type        = "zip"
+  source_dir  = "${path.module}/package"
+  output_path = "${path.module}/lambda.zip"
+}
+
 # Lambda Layer for helper scripts
 resource "aws_lambda_layer_version" "helper_scripts" {
   layer_name          = local.layer_name
@@ -32,9 +38,7 @@ resource "aws_lambda_function" "processing" {
     var.aws_sdk_pandas_layer_arn
   ]
 
-  # Source code from S3
-  s3_bucket = var.cur_function_s3_bucket
-  s3_key    = var.cur_function_s3_key
+  filename = "lambda.zip"
 
   # Environment variables
   environment {
