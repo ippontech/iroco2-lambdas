@@ -16,7 +16,7 @@ resource "aws_lambda_layer_version" "helper_scripts" {
   description         = "Scripts for IROCO2 helpers"
   compatible_runtimes = ["python3.9", "python3.10", "python3.11"]
 
-  filename = "layers.zip"
+  filename = "${path.module}/layers.zip"
 
 }
 
@@ -38,7 +38,7 @@ resource "aws_lambda_function" "processing" {
     var.aws_sdk_pandas_layer_arn
   ]
 
-  filename = "lambda.zip"
+  filename = "${path.module}/lambda.zip"
 
   # Environment variables
   environment {

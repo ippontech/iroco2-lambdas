@@ -106,3 +106,9 @@ variable "aws_sdk_pandas_layer_arn" {
   type        = string
   default     = "arn:aws:lambda:eu-west-3:336392948345:layer:AWSSDKPandas-Python311:18"
 }
+
+variable "bcm_data_export_name" {
+  description = "Name for the CUR data export in the console"
+  type        = string
+  default     = "IROCO2-REPORT"
+}

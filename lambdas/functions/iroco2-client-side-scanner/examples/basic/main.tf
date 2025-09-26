@@ -14,47 +14,31 @@ provider "aws" {
   region = var.aws_region
 }
 
-# Data sources for existing resources
-data "aws_kms_key" "existing" {
-  key_id = var.kms_key_id
-}
 
-# Example S3 buckets (you may want to use existing ones)
-resource "aws_s3_bucket" "lambda_artifacts" {
-  bucket = "${var.project_name}-lambda-artifacts-${random_id.suffix.hex}"
-}
 
-resource "random_id" "suffix" {
-  byte_length = 4
-}
 
 # Use the IROCO2 Client Side Scanner module
 module "iroco2_scanner" {
-  source = "../"
+  source = "../../."
 
   # Required variables
-  kms_key_arn                = data.aws_kms_key.existing.arn
-  layer_bucket_storage       = aws_s3_bucket.lambda_artifacts.bucket
-  layer_bucket_key          = aws_s3_object.lambda_layer.key
-  aws_org_id                = var.aws_org_id
-  cur_output_bucket_name    = "${var.project_name}-cur-output-${random_id.suffix.hex}"
-  cur_function_s3_key       = aws_s3_object.lambda_function.key
-  cur_function_s3_bucket    = aws_s3_bucket.lambda_artifacts.bucket
-  iroco2_api_endpoint       = var.iroco2_api_endpoint
-  iroco2_gateway_endpoint   = var.iroco2_gateway_endpoint
-  iroco2_api_key           = var.iroco2_api_key
-
-  # Optional customization
-  lambda_function_name = "${var.project_name}-cur-scanner"
-  lambda_timeout       = var.lambda_timeout
-  lambda_memory_size   = var.lambda_memory_size
-
+  kms_key_arn             = "arn:aws:kms:eu-west-3:992382519845:key/f4ab6c91-0a7d-4a32-8c11-8fdd4380888d"
+  aws_org_id              = "o-yn7toj4ob7"
+  cur_output_bucket_name  = "iroco-cur-bucket-toto"
+  iroco2_api_endpoint     = "https://api.iroco2.example.com"
+  iroco2_gateway_endpoint = "https://gateway.iroco2.example.com"
+  iroco2_api_key          = "your-api-key-here"
+  bcm_data_export_name = "IROCO2-REPORT-TEST"
+  lambda_function_name = "test_deploy_iroco2"
+  lambda_log_group_name = "test-deploy-iroco2"
+# Common tags
   common_tags = {
-    Environment = var.environment
-    Project     = var.project_name
-    Owner       = var.owner
-    Repository  = "https://github.com/ippontech/iroco2-lambdas"
+    Environment = "development"
+    Project     = "IROCO2"
+    Owner       = "data-team"
+    ManagedBy   = "Terraform"
   }
+
 }
 
 # Outputs

@@ -1,6 +1,6 @@
 resource "aws_bcmdataexports_export" "CUR" {
   export {
-    name = "IROCO2-REPORT"
+    name = var.bcm_data_export_name
     data_query {
       query_statement = "SELECT identity_line_item_id, identity_time_interval, line_item_product_code,line_item_unblended_cost FROM COST_AND_USAGE_REPORT"
       table_configurations = {
