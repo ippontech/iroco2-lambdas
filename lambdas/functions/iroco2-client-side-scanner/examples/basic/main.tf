@@ -28,24 +28,9 @@ resource "random_id" "suffix" {
   byte_length = 4
 }
 
-# Upload Lambda function and layer (optional - you can use existing S3 objects)
-resource "aws_s3_object" "lambda_function" {
-  bucket = aws_s3_bucket.lambda_artifacts.bucket
-  key    = "functions/cur-scanner.zip"
-  source = "../../cur-scanner.zip"
-  etag   = filemd5("../../cur-scanner.zip")
-}
-
-resource "aws_s3_object" "lambda_layer" {
-  bucket = aws_s3_bucket.lambda_artifacts.bucket
-  key    = "layers/helper-scripts.zip"
-  source = "../../helper-scripts.zip"
-  etag   = filemd5("../../helper-scripts.zip")
-}
-
 # Use the IROCO2 Client Side Scanner module
 module "iroco2_scanner" {
-  source = "../../"
+  source = "../"
 
   # Required variables
   kms_key_arn                = data.aws_kms_key.existing.arn

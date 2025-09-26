@@ -375,7 +375,7 @@ You need to create these resources before deploying:
    ```bash
    # Copy example file
    cp terraform.tfvars.example terraform.tfvars
-   
+
    # Edit with your actual values
    nano terraform.tfvars
    ```
@@ -399,7 +399,7 @@ You need to create these resources before deploying:
    ```bash
    # Check outputs
    terraform output
-   
+
    # Verify Lambda function
    aws lambda get-function --function-name IROCO2-CUR-SCRAPPER-dev
    ```
