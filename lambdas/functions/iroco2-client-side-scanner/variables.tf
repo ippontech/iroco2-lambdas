@@ -7,16 +7,6 @@ variable "kms_key_arn" {
   }
 }
 
-variable "layer_bucket_storage" {
-  description = "The S3 bucket name for the lambda layer"
-  type        = string
-}
-
-variable "layer_bucket_key" {
-  description = "The S3 bucket key for the lambda layer"
-  type        = string
-}
-
 variable "aws_org_id" {
   description = "The AWS Organization ID"
   type        = string
@@ -33,16 +23,6 @@ variable "cur_output_bucket_name" {
     condition     = can(regex("^[a-z0-9][a-z0-9-]*[a-z0-9]$", var.cur_output_bucket_name))
     error_message = "The bucket name must be a valid S3 bucket name."
   }
-}
-
-variable "cur_function_s3_key" {
-  description = "The S3 bucket key for the CUR lambda function"
-  type        = string
-}
-
-variable "cur_function_s3_bucket" {
-  description = "The S3 bucket name for the CUR lambda function"
-  type        = string
 }
 
 variable "iroco2_api_endpoint" {

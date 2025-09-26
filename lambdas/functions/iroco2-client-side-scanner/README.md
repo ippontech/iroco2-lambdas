@@ -69,16 +69,12 @@ The module provisions the following AWS resources:
 
 ```hcl
 module "iroco2_client_side_scanner" {
-  source = "./lambdas/functions/iroco2-client-side-scanner/tf"
+  source = "./lambdas/functions/iroco2-client-side-scanner/"
 
   # Required variables
   kms_key_arn                = "arn:aws:kms:eu-west-3:123456789012:key/12345678-1234-1234-1234-123456789012"
-  layer_bucket_storage       = "my-lambda-layers-bucket"
-  layer_bucket_key          = "layers/helper-scripts.zip"
   aws_org_id                = "o-1234567890"
   cur_output_bucket_name    = "my-cur-output-bucket"
-  cur_function_s3_key       = "functions/cur-scanner.zip"
-  cur_function_s3_bucket    = "my-lambda-functions-bucket"
   iroco2_api_endpoint       = "https://api.iroco2.example.com"
   iroco2_gateway_endpoint   = "https://gateway.iroco2.example.com"
   iroco2_api_key           = "your-api-key-here"
@@ -106,12 +102,8 @@ module "iroco2_client_side_scanner" {
 
   # Required variables
   kms_key_arn                = data.aws_kms_key.main.arn
-  layer_bucket_storage       = aws_s3_bucket.lambda_layers.bucket
-  layer_bucket_key          = "layers/helper-scripts-v2.zip"
   aws_org_id                = var.organization_id
   cur_output_bucket_name    = "${var.environment}-cur-output-${random_id.bucket_suffix.hex}"
-  cur_function_s3_key       = "functions/cur-scanner-${var.version}.zip"
-  cur_function_s3_bucket    = aws_s3_bucket.lambda_functions.bucket
   iroco2_api_endpoint       = var.iroco2_api_endpoint
   iroco2_gateway_endpoint   = var.iroco2_gateway_endpoint
   iroco2_api_key           = data.aws_secretsmanager_secret_version.iroco2_api_key.secret_string
@@ -166,12 +158,8 @@ module "iroco2_client_side_scanner" {
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
 | kms_key_arn | The KMS key ARN to encrypt the bucket and logs | `string` | n/a | yes |
-| layer_bucket_storage | The S3 bucket name for the lambda layer | `string` | n/a | yes |
-| layer_bucket_key | The S3 bucket key for the lambda layer | `string` | n/a | yes |
 | aws_org_id | The AWS Organization ID | `string` | n/a | yes |
 | cur_output_bucket_name | The S3 bucket name for the CUR output | `string` | n/a | yes |
-| cur_function_s3_key | The S3 bucket key for the CUR lambda function | `string` | n/a | yes |
-| cur_function_s3_bucket | The S3 bucket name for the CUR lambda function | `string` | n/a | yes |
 | iroco2_api_endpoint | The IroCO2 API endpoint | `string` | n/a | yes |
 | iroco2_gateway_endpoint | The IroCO2 Gateway endpoint | `string` | n/a | yes |
 | iroco2_api_key | The IroCO2 API token | `string` | n/a | yes |
@@ -409,12 +397,8 @@ You need to create these resources before deploying:
 ```hcl
 # Update these with your actual values
 kms_key_arn                = "arn:aws:kms:eu-west-3:123456789012:key/abcd1234-..."
-layer_bucket_storage       = "my-lambda-layers-bucket"
-layer_bucket_key          = "layers/helper-scripts.zip"
 aws_org_id                = "o-1234567890"
 cur_output_bucket_name    = "iroco2-cur-output-unique-suffix"
-cur_function_s3_key       = "functions/cur-scanner.zip"
-cur_function_s3_bucket    = "my-lambda-functions-bucket"
 iroco2_api_endpoint       = "https://api.iroco2.example.com"
 iroco2_gateway_endpoint   = "https://gateway.iroco2.example.com"
 iroco2_api_key           = "your-secret-api-key"
