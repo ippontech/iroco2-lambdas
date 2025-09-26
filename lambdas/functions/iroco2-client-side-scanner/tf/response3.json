@@ -1,1 +1,0 @@
-{"errorMessage": "'Records'", "errorType": "KeyError", "requestId": "26fa1e0b-59b8-4faa-9bec-af6126e7244c", "stackTrace": ["  File \"/var/task/cur_scrapper.py\", line 54, in handler\n    print(f\"Event Name: {event['Records'][0]['eventName']}\")\n"]}
