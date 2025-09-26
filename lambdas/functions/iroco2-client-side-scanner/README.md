@@ -159,7 +159,8 @@ module "iroco2_client_side_scanner" {
 |------|-------------|------|---------|:--------:|
 | kms_key_arn | The KMS key ARN to encrypt the bucket and logs | `string` | n/a | yes |
 | aws_org_id | The AWS Organization ID | `string` | n/a | yes |
-| cur_output_bucket_name | The S3 bucket name for the CUR output | `string` | n/a | yes |
+| cur_output_bucket_name | Name for the CUR data export in the console | `string` | n/a | yes |
+| bcm_data_export_name | The S3 bucket name for the CUR output | `string` | IROCO2-REPORT | no |
 | iroco2_api_endpoint | The IroCO2 API endpoint | `string` | n/a | yes |
 | iroco2_gateway_endpoint | The IroCO2 Gateway endpoint | `string` | n/a | yes |
 | iroco2_api_key | The IroCO2 API token | `string` | n/a | yes |
@@ -399,6 +400,7 @@ You need to create these resources before deploying:
 kms_key_arn                = "arn:aws:kms:eu-west-3:123456789012:key/abcd1234-..."
 aws_org_id                = "o-1234567890"
 cur_output_bucket_name    = "iroco2-cur-output-unique-suffix"
+bcm_data_export_name      = "IROCO2-REPORT"
 iroco2_api_endpoint       = "https://api.iroco2.example.com"
 iroco2_gateway_endpoint   = "https://gateway.iroco2.example.com"
 iroco2_api_key           = "your-secret-api-key"
