@@ -10,7 +10,7 @@ locals {
 
   # S3 bucket notification events
   s3_notification_events = [
-    "s3:ObjectCreated:Copy"
+    "s3:ObjectCreated:*"
   ]
 
   # S3 object filters for Lambda triggers
@@ -19,7 +19,7 @@ locals {
       suffix = ".parquet"
     },
     {
-      suffix = ".csv.zip"
+      suffix = ".csv.gz"
     }
   ]
 }

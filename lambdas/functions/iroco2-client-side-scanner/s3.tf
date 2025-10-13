@@ -79,7 +79,7 @@ resource "aws_s3_bucket_policy" "cur_output" {
         ]
         Condition = {
           StringEquals = {
-            "aws:SourceAccount" = data.aws_caller_identity.current.account_id,
+            "aws:SourceAccount" = "arn:aws:iam::${data.aws_caller_identity.current.account_id}:root",
           },
           StringLike = {
             "aws:SourceArn" = [
