@@ -71,7 +71,8 @@ resource "aws_s3_bucket_policy" "cur_output" {
         }
         Action = [
           "s3:GetBucketPolicy",
-          "s3:PutObject"
+          "s3:PutObject",
+          "s3:ListBucket"
         ]
         Resource = [
           "arn:aws:s3:::${var.cur_output_bucket_name}",
