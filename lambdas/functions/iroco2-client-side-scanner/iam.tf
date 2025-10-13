@@ -39,7 +39,10 @@ resource "aws_iam_role_policy" "lambda_s3_kms_access" {
           "s3:GetObjectVersion",
           "s3:ListBucket"
         ]
-        Resource = "${aws_s3_bucket.cur_output.arn}/*"
+        Resource = [
+          "${aws_s3_bucket.cur_output.arn}",
+          "${aws_s3_bucket.cur_output.arn}/*"
+        ]
       },
       {
         Effect = "Allow"

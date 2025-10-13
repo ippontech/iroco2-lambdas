@@ -31,7 +31,7 @@ class CurProcessorService:
     def parsing_cur_and_send_to_api(self, bucket_name, s3_file_name):
         cur_file_type = os.path.splitext(s3_file_name)[1].replace(".", "")
         print(cur_file_type)
-        cur = self.s3_repository.read_file(bucket_name, s3_file_name)
+        cur = self.s3_repository.read_file(bucket_name, urllib.parse.unquote_plus(s3_file_name))
         message_parsed = []
         parsed_ec2_message = self.cur_processor_ec2_service.creating_message_from_cur(cur, cur_file_type)
         print(f'EC2 messages: {parsed_ec2_message}')

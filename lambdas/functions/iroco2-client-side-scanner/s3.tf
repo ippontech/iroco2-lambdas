@@ -71,18 +71,15 @@ resource "aws_s3_bucket_policy" "cur_output" {
         }
         Action = [
           "s3:GetBucketPolicy",
-          "s3:PutObject",
-          "s3:ListBucket"
+          "s3:PutObject"
         ]
         Resource = [
           "arn:aws:s3:::${var.cur_output_bucket_name}",
           "arn:aws:s3:::${var.cur_output_bucket_name}/*"
         ]
         Condition = {
-          StringEquals = {
-            "aws:SourceAccount" = "arn:aws:iam::${data.aws_caller_identity.current.account_id}:root",
-          },
           StringLike = {
+            "aws:SourceAccount" = data.aws_caller_identity.current.account_id,
             "aws:SourceArn" = [
               "arn:aws:bcm-data-exports:us-east-1:${data.aws_caller_identity.current.account_id}:export/*",
               "arn:aws:cur:us-east-1:${data.aws_caller_identity.current.account_id}:definition/*"
@@ -95,8 +92,8 @@ resource "aws_s3_bucket_policy" "cur_output" {
         Principal = {
           AWS = aws_iam_role.lambda_execution.arn
         }
-        NotAction = "s3:GetObject"
-        Resource  = "${aws_s3_bucket.cur_output.arn}/*"
+        NotAction = ["s3:GetObject", "s3:ListBucket"]
+        Resource  = ["${aws_s3_bucket.cur_output.arn}/*", aws_s3_bucket.cur_output.arn]
         Condition = {
           Bool = {
             "aws:SecureTransport" = "true"
