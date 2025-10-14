@@ -2,7 +2,7 @@ resource "aws_bcmdataexports_export" "CUR" {
   export {
     name = var.bcm_data_export_name
     data_query {
-      query_statement = "SELECT line_item_usage_amount, product_region_code, product_servicecode, line_item_usage_type FROM COST_AND_USAGE_REPORT"
+      query_statement = "SELECT line_item_usage_amount, product_region_code, product_servicecode, product_instance_type, line_item_usage_type FROM COST_AND_USAGE_REPORT"
       table_configurations = {
         COST_AND_USAGE_REPORT = {
           BILLING_VIEW_ARN                      = "arn:aws:billing::${data.aws_caller_identity.current.account_id}:billingview/primary"
